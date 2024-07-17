@@ -13,7 +13,19 @@
 
 namespace FlexFlow {
 
-std::vector<device_id_t> device_ids(MachineView const &);
+struct MachineView {
+  std::vector<device_id_t> device_ids() const;
+
+  device_id_t at(FFOrdered<num_points_t> const &coord) const;
+  StridedRectangleSide at(size_t) const;
+
+public:
+  device_id_t start;
+  StridedRectangle rect;
+};
+
+FF_VISITABLE_STRUCT(MachineView, start, rect);
+
 std::size_t num_dims(MachineView const &);
 std::size_t num_devices(MachineView const &);
 DeviceType get_device_type(MachineView const &);

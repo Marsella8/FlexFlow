@@ -5,6 +5,9 @@
 #include "utils/exception.h"
 #include "utils/graph/serialparallel.h"
 
+#include "utils/deduplicated_priority_queue.h"
+#include <algorithm>
+
 namespace FlexFlow {
 
 MachineMapping MachineMapping::combine(MachineMapping const &s1,
