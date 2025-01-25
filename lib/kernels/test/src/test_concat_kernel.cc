@@ -6,9 +6,9 @@
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test concat kernel forward and backward") {
-    size_t num_inputs = 2;
-    size_t size_per_input = 10;
-    ff_dim_t concat_axis = ff_dim_t{1};
+    size_t num_inputs = 3;
+    size_t size_per_input = 100;
+    ff_dim_t concat_axis = ff_dim_t{nonnegative_int{0}};
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,
@@ -24,8 +24,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("forward_kernel") {
       std::vector<GenericTensorAccessorR> input_accessors =
-          repeat(num_inputs, [&]() {
-            return create_random_filled_accessor_r(input_shape, allocator);
+          repeat<GenericTensorAccessorR>(num_inputs, [&]() {
+            return read_only_accessor_from_write_accessor(
+                create_random_filled_accessor_w(input_shape, allocator));
           });
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
@@ -40,10 +41,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorR output_grad_accessor =
-          create_random_filled_accessor_r(output_shape, allocator);
-      std::vector<GenericTensorAccessorW> input_grad_accessors = repeat(
-          num_inputs, [&]() { return allocator.allocate_tensor(input_shape); });
-
+          read_only_accessor_from_write_accessor(
+              create_random_filled_accessor_w(output_shape, allocator));
+      std::vector<GenericTensorAccessorW> input_grad_accessors =
+          repeat<GenericTensorAccessorW>(num_inputs, [&]() {
+            return allocator.allocate_tensor(input_shape);
+          });
       Kernels::Concat::backward_kernel(managed_stream.raw_stream(),
                                        output_grad_accessor,
                                        input_grad_accessors,

@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
-#include "./cost_estimator_for_test.h"
+#include "../cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
@@ -9,6 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -144,13 +145,27 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
+    auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+        {map_unmapped_op_cost_estimate_key(k1, mv1),
+         OpCostMetrics{/*forward_runtime=*/0.5,
+                       /*backward_runtime=*/0.5,
+                       /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k2, mv1),
+         OpCostMetrics{/*forward_runtime=*/1.0,
+                       /*backward_runtime=*/1.0,
+                       /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k1, mv2),
+         OpCostMetrics{/*forward_runtime=*/0.75,
+                       /*backward_runtime=*/0.75,
+                       /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k2, mv2),
+         OpCostMetrics{/*forward_runtime=*/1.25,
+                       /*backward_runtime=*/1.25,
+                       /*memory=*/nonnegative_int{0}}},
+    }};
+
     CostEstimator cost_estimator = make_fake_cost_estimator(
-        std::unordered_map<OpCostEstimateKey, float>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), 1.0},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), 2.0},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), 1.5},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), 2.5},
-        }},
+        map1,
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{{}}, 0.0},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),

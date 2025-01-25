@@ -13,9 +13,9 @@
 //   TEST_CASE("Local Cost Estimator") {
 //     // local backing initialization
 //     ManagedPerDeviceFFHandle managed_handle{
-/*workSpaceSize=*/1024 * 1024,
-    /*allowTensorOpMathConversion=*/true
-}
+// /*workSpaceSize=*/1024 * 1024,
+// /*allowTensorOpMathConversion=*/true
+// }
 ;
 
 //     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
